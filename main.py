@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 
 class TaskCreate(BaseModel):
     title: Optional[str] = None
