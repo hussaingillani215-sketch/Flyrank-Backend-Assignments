@@ -50,3 +50,27 @@ def insert_task(title: str):
     new_id = cursor.lastrowid
     conn.close()
     return {"id": new_id, "title": title, "done": False}
+
+def update_task_db(task_id: int, title, done):
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    if row is None:
+        conn.close()
+        return None
+    new_title = title if title is not None else row["title"]
+    new_done = done if done is not None else bool(row["done"])
+    conn.execute(
+        "UPDATE tasks SET title = ?, done = ? WHERE id = ?",
+        (new_title, int(new_done), task_id)
+    )
+    conn.commit()
+    conn.close()
+    return {"id": task_id, "title": new_title, "done": new_done}
+
+def delete_task_db(task_id: int):
+    conn = get_connection()
+    cursor = conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    return deleted
