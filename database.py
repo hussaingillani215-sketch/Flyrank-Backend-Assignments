@@ -26,3 +26,17 @@ def init_db():
         conn.commit()
 
     conn.close()
+
+def get_all_tasks():
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM tasks").fetchall()
+    conn.close()
+    return [{**dict(row), "done": bool(row["done"])} for row in rows]
+
+def get_task_by_id(task_id: int):
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    conn.close()
+    if row is None:
+        return None
+    return {**dict(row), "done": bool(row["done"])}

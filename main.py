@@ -1,7 +1,7 @@
 ﻿from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from database import init_db
+from database import init_db, get_all_tasks, get_task_by_id
 
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
@@ -29,10 +29,10 @@ def health_check():
     return {"status": "ok"}
 @app.get("/tasks")
 def get_tasks():
-    return tasks
+    return get_all_tasks()
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
-    task = find_task(task_id)
+    task = get_task_by_id(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
     return task
