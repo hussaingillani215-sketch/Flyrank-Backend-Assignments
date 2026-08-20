@@ -1,7 +1,7 @@
 ﻿from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from database import init_db, get_all_tasks, get_task_by_id
+from database import init_db, get_all_tasks, get_task_by_id, insert_task
 
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
@@ -40,10 +40,7 @@ def get_task(task_id: int):
 def create_task(new_task: TaskCreate):
     if not new_task.title or new_task.title.strip() == "":
         raise HTTPException(status_code=400, detail="Title cannot be empty")
-    next_id = max(task["id"] for task in tasks) + 1
-    task = {"id": next_id, "title": new_task.title, "done": False}
-    tasks.append(task)
-    return task
+    return insert_task(new_task.title)
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, update: TaskUpdate):
     task = find_task(task_id)

@@ -40,3 +40,13 @@ def get_task_by_id(task_id: int):
     if row is None:
         return None
     return {**dict(row), "done": bool(row["done"])}
+
+def insert_task(title: str):
+    conn = get_connection()
+    cursor = conn.execute(
+        "INSERT INTO tasks (title, done) VALUES (?, ?)", (title, 0)
+    )
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"id": new_id, "title": title, "done": False}
