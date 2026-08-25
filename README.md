@@ -1,6 +1,6 @@
-# Task API
+﻿# Task API
 
-A small REST API for managing a to-do list — supports Create, Read, Update, and Delete operations on tasks. Built with Python and FastAPI, with interactive documentation via Swagger UI. Data is stored in memory (resets when the server restarts).
+A small REST API for managing a to-do list â€” supports Create, Read, Update, and Delete operations on tasks. Built with Python and FastAPI, with interactive documentation via Swagger UI. Data is stored in memory (resets when the server restarts).
 
 ## Setup & Run
 
@@ -67,7 +67,7 @@ Full endpoint list:
 
 ![Swagger endpoints](swagger-endpoints.png)
 
-Live test — creating a task via "Try it out":
+Live test â€” creating a task via "Try it out":
 
 ![Swagger create response](swagger-create-response.png)
 
@@ -86,17 +86,33 @@ Live test — creating a task via "Try it out":
 >
 > Use these status codes: 201 when a task is successfully created, 404 with a JSON error message when a requested task id doesn't exist, 400 when a title is missing or empty, and 204 with no response body when a task is successfully deleted.
 >
-> Tasks should be stored in memory, using a plain Python list — not a file or a database. This means all data resets to the 3 example tasks whenever the server restarts.
+> Tasks should be stored in memory, using a plain Python list â€” not a file or a database. This means all data resets to the 3 example tasks whenever the server restarts.
 >
 > Since this is built with FastAPI, Swagger UI documentation should appear automatically at /docs with no extra setup or packages required.
 
 **What the AI did better:** my `next_id` logic (`max(...) + 1`) would crash if every task were ever deleted, since `max()` fails on an empty list. The AI's version added a safe fallback (`max(..., default=0) + 1`), which keeps working even if the list is emptied.
 
-**What it got wrong or added beyond my prompt:** my prompt never said whether a client could set `done` when *creating* a task. My own hand-built code always forces `done: False` on create, ignoring anything the client sends. The AI's version silently added a `done` field to task creation, letting a client create a task that's already marked done — something my prompt never actually authorized.
+**What it got wrong or added beyond my prompt:** my prompt never said whether a client could set `done` when *creating* a task. My own hand-built code always forces `done: False` on create, ignoring anything the client sends. The AI's version silently added a `done` field to task creation, letting a client create a task that's already marked done â€” something my prompt never actually authorized.
 
-**What my prompt forgot to specify:** I never mentioned the root `GET /` endpoint at all. Sure enough, the AI's code doesn't have one — `curl -i http://127.0.0.1:8001/` returns `404 Not Found`, while my own API returns a JSON description at that same path. The AI didn't guess at something I didn't ask for; it just didn't build it, which is the correct behavior — it exposed a real gap in my spec, not a mistake on its part.
+**What my prompt forgot to specify:** I never mentioned the root `GET /` endpoint at all. Sure enough, the AI's code doesn't have one â€” `curl -i http://127.0.0.1:8001/` returns `404 Not Found`, while my own API returns a JSON description at that same path. The AI didn't guess at something I didn't ask for; it just didn't build it, which is the correct behavior â€” it exposed a real gap in my spec, not a mistake on its part.
 
 **One-sentence rematch note:** adding "also include a `GET /` endpoint returning basic API info like name and version" to the prompt would close this gap in a regenerated version.
 ## Stage 4 - Exploring SQLite
 
 Ran DELETE FROM tasks WHERE done = 1; by hand in DB Browser for SQLite. Since a prior UPDATE had just set every row's done to 1, this deleted all 4 rows - and GET /tasks on the still-running server (no restart) immediately returned an empty list, confirming the API and DB Browser read the same file directly, with no syncing step between them.
+
+## Database
+
+This project stores tasks in **SQLite** instead of an in-memory list, so data survives server restarts.
+
+- **Why SQLite:** it's a single file, needs no separate server or installation, and is created automatically the first time the app runs - ideal for a project this size.
+- **Where it lives:** `tasks.db`, in the project root. It's git-ignored, so every fresh clone starts with no database file and builds its own.
+- **How to run it:**
+```powershell
+  .\venv\Scripts\Activate.ps1
+  uvicorn main:app --reload
+```
+  On first run, `tasks.db` and the `tasks` table are created automatically, seeded with 3 example tasks.
+- **Example query** (run by hand in DB Browser for SQLite): `DELETE FROM tasks WHERE done = 1;` - deleted all rows where a task was marked done, confirmed instantly through `GET /tasks` on the live server with no restart, proving the API and DB Browser read the same file directly.
+
+![DB Browser showing tasks table](db-browser-screenshot.png)
