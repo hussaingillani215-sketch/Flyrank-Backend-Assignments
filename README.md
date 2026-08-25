@@ -97,3 +97,6 @@ Live test — creating a task via "Try it out":
 **What my prompt forgot to specify:** I never mentioned the root `GET /` endpoint at all. Sure enough, the AI's code doesn't have one — `curl -i http://127.0.0.1:8001/` returns `404 Not Found`, while my own API returns a JSON description at that same path. The AI didn't guess at something I didn't ask for; it just didn't build it, which is the correct behavior — it exposed a real gap in my spec, not a mistake on its part.
 
 **One-sentence rematch note:** adding "also include a `GET /` endpoint returning basic API info like name and version" to the prompt would close this gap in a regenerated version.
+## Stage 4 - Exploring SQLite
+
+Ran DELETE FROM tasks WHERE done = 1; by hand in DB Browser for SQLite. Since a prior UPDATE had just set every row's done to 1, this deleted all 4 rows - and GET /tasks on the still-running server (no restart) immediately returned an empty list, confirming the API and DB Browser read the same file directly, with no syncing step between them.
