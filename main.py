@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
-from auth import supabase
+from auth import supabase, signup_user, login_user
 
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
@@ -13,6 +13,9 @@ class TaskCreate(BaseModel):
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     done: Optional[bool] = None
+class AuthCredentials(BaseModel):
+    email: str
+    password: str
 @app.get("/")
 def read_root():
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
@@ -44,3 +47,18 @@ def delete_task(task_id: int):
     deleted = delete_task_db(task_id)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+@app.post("/auth/signup", status_code=201)
+def signup(credentials: AuthCredentials):
+    if not credentials.email or not credentials.password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
+    result = signup_user(credentials.email, credentials.password)
+    return result
+@app.post("/auth/login")
+def login(credentials: AuthCredentials):
+    if not credentials.email or not credentials.password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
+    try:
+        result = login_user(credentials.email, credentials.password)
+        return result
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid login credentials")
