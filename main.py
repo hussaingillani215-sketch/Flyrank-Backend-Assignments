@@ -1,5 +1,5 @@
 ﻿from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
 from auth import supabase, signup_user, login_user
@@ -62,3 +62,15 @@ def login(credentials: AuthCredentials):
         return result
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid login credentials")
+
+@app.get("/public/info")
+def public_info():
+    return {"message": "Welcome stranger! This info is public."}
+
+@app.get("/protected/profile")
+def protected_profile(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer ") or auth_header == "Bearer ":
+        raise HTTPException(status_code=401, detail="Access token required")
+    token = auth_header.replace("Bearer ", "")
+    return {"message": "Token received (not yet verified)", "token_preview": token[:10]}
