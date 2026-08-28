@@ -2,9 +2,11 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
+from auth import supabase
 
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
+print("Server running and connected to Supabase")
 
 class TaskCreate(BaseModel):
     title: Optional[str] = None
