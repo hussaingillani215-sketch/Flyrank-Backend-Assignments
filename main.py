@@ -1,5 +1,6 @@
 ﻿from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
 from auth import supabase, signup_user, login_user, verify_token, logout_user
@@ -16,11 +17,10 @@ class AuthCredentials(BaseModel):
     email: str
     password: str
 
-def get_current_user(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer ") or auth_header == "Bearer ":
-        raise HTTPException(status_code=401, detail="Access token required")
-    token = auth_header.replace("Bearer ", "")
+security = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
     try:
         result = verify_token(token)
         return {"token": token, "user": result}
