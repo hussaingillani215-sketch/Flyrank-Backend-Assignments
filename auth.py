@@ -20,3 +20,7 @@ def login_user(email: str, password: str):
 def verify_token(token: str):
     response = supabase.auth.get_user(token)
     return response
+
+def logout_user():
+    response = supabase.auth.sign_out()
+    return response

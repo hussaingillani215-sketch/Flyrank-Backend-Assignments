@@ -1,9 +1,8 @@
 ﻿from typing import Optional
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
-from auth import supabase, signup_user, login_user, verify_token
-
+from auth import supabase, signup_user, login_user, verify_token, logout_user
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
 print("Server running and connected to Supabase")
@@ -16,6 +15,18 @@ class TaskUpdate(BaseModel):
 class AuthCredentials(BaseModel):
     email: str
     password: str
+
+def get_current_user(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer ") or auth_header == "Bearer ":
+        raise HTTPException(status_code=401, detail="Access token required")
+    token = auth_header.replace("Bearer ", "")
+    try:
+        result = verify_token(token)
+        return {"token": token, "user": result}
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
 @app.get("/")
 def read_root():
     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
@@ -68,13 +79,15 @@ def public_info():
     return {"message": "Welcome stranger! This info is public."}
 
 @app.get("/protected/profile")
-def protected_profile(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer ") or auth_header == "Bearer ":
-        raise HTTPException(status_code=401, detail="Access token required")
-    token = auth_header.replace("Bearer ", "")
-    try:
-        result = verify_token(token)
-        return result
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+def protected_profile(current = Depends(get_current_user)):
+    return current["user"]
+
+@app.get("/protected/dashboard")
+def protected_dashboard(current = Depends(get_current_user)):
+    return {"message": f"Welcome to your dashboard, {current['user'].user.email}"}
+
+@app.post("/auth/logout", status_code=204)
+def logout(current = Depends(get_current_user)):
+    logout_user()
+    return
+
