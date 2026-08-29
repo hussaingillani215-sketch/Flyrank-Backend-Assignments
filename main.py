@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from database import init_db, get_all_tasks, get_task_by_id, insert_task, update_task_db, delete_task_db
-from auth import supabase, signup_user, login_user
+from auth import supabase, signup_user, login_user, verify_token
 
 app = FastAPI(title="Flyrank Task 1  API", version="1.0")
 init_db()
@@ -73,4 +73,8 @@ def protected_profile(request: Request):
     if not auth_header or not auth_header.startswith("Bearer ") or auth_header == "Bearer ":
         raise HTTPException(status_code=401, detail="Access token required")
     token = auth_header.replace("Bearer ", "")
-    return {"message": "Token received (not yet verified)", "token_preview": token[:10]}
+    try:
+        result = verify_token(token)
+        return result
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")

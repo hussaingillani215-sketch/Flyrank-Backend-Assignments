@@ -16,3 +16,7 @@ def signup_user(email: str, password: str):
 def login_user(email: str, password: str):
     response = supabase.auth.sign_in_with_password({"email": email, "password": password})
     return response
+
+def verify_token(token: str):
+    response = supabase.auth.get_user(token)
+    return response
