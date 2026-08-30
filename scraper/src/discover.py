@@ -26,7 +26,7 @@ def fetch_catalogue_page(page_num, url):
     return response.text
 
 def discover_all_book_urls():
-    all_urls = []
+    seen = {}
     current_url = BASE_CATALOGUE_URL
     page_num = 1
 
@@ -37,7 +37,8 @@ def discover_all_book_urls():
         book_links = soup.select(".product_pod h3 a")
         for link in book_links:
             absolute_url = urljoin(current_url, link["href"])
-            all_urls.append(absolute_url)
+            if absolute_url not in seen:
+                seen[absolute_url] = current_url  # book_url -> which catalogue page found it
 
         next_link = soup.select_one("li.next a")
         if next_link and page_num < MAX_PAGES:
@@ -46,9 +47,8 @@ def discover_all_book_urls():
         else:
             current_url = None
 
-    unique_urls = list(set(all_urls))
-    print(f"catalogue_pages={page_num}, discovered={len(all_urls)}, unique_urls={len(unique_urls)}")
-    return unique_urls
+    print(f"catalogue_pages={page_num}, discovered={len(seen)}, unique_urls={len(seen)}")
+    return seen  # dict: {book_url: source_catalogue_page}
 
 if __name__ == "__main__":
     discover_all_book_urls()
