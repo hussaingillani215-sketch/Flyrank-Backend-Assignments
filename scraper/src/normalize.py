@@ -10,7 +10,7 @@ from extract import extract_all_records
 def dedupe_text(text):
     if not text or len(text) < 80:
         return text
-    anchor = text[:40]
+    anchor = text[:15]
     second_pos = text.find(anchor, 1)
     if second_pos != -1:
         return text[second_pos:]
