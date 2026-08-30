@@ -19,6 +19,7 @@ def fetch_catalogue_page(page_num, url):
     response = requests.get(url, headers=HEADERS, timeout=5)
     if response.status_code != 200:
         raise Exception(f"Fetch failed: status {response.status_code}")
+    response.encoding = "utf-8"
 
     time.sleep(0.5)
     with open(cache_path, "w", encoding="utf-8") as f:
@@ -38,7 +39,7 @@ def discover_all_book_urls():
         for link in book_links:
             absolute_url = urljoin(current_url, link["href"])
             if absolute_url not in seen:
-                seen[absolute_url] = current_url  # book_url -> which catalogue page found it
+                seen[absolute_url] = current_url
 
         next_link = soup.select_one("li.next a")
         if next_link and page_num < MAX_PAGES:
@@ -48,7 +49,7 @@ def discover_all_book_urls():
             current_url = None
 
     print(f"catalogue_pages={page_num}, discovered={len(seen)}, unique_urls={len(seen)}")
-    return seen  # dict: {book_url: source_catalogue_page}
+    return seen
 
 if __name__ == "__main__":
     discover_all_book_urls()
