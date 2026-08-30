@@ -8,13 +8,12 @@ sys.path.insert(0, "src")
 from extract import extract_all_records
 
 def dedupe_text(text):
-    if not text:
+    if not text or len(text) < 80:
         return text
-    length = len(text)
-    if length % 2 == 0:
-        half = length // 2
-        if text[:half] == text[half:]:
-            return text[:half]
+    anchor = text[:40]
+    second_pos = text.find(anchor, 1)
+    if second_pos != -1:
+        return text[second_pos:]
     return text
 
 def parse_price(price_text):
