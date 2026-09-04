@@ -29,7 +29,7 @@ tool_definitions = [
 def run_agent(user_message):
     messages = [{"role": "user", "content": user_message}]
 
-    for _ in range(5):  # hard cap so a confused loop can't run forever
+    for _ in range(5):
         response = client.messages.create(
             model="claude-haiku-4-5",
             max_tokens=1024,
@@ -38,13 +38,13 @@ def run_agent(user_message):
         )
 
         if response.stop_reason != "tool_use":
-            # Claude answered in plain text — we're done
+            answer = ""
             for block in response.content:
                 if block.type == "text":
-                    print(block.text)
-            return
+                    answer += block.text
+            print(answer)
+            return answer
 
-        # Claude wants to call a tool
         messages.append({"role": "assistant", "content": response.content})
 
         tool_results = []
@@ -62,6 +62,4 @@ def run_agent(user_message):
         messages.append({"role": "user", "content": tool_results})
 
     print("Loop cap hit — stopping.")
-
-if __name__ == "__main__":
-    run_agent("What tasks do I still need to finish?")
+    return "Loop cap hit — stopping."
