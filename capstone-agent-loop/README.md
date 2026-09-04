@@ -23,6 +23,15 @@ This loop - ask, decide, act, respond - is the core mechanism behind AI agents a
 - api.py - a FastAPI route (POST /ask) wrapping run_agent(), so the agent is reachable over HTTP rather than only from the terminal.
 
 The database is the same Postgres instance built in earlier assignments (Docker + psycopg), reused here rather than duplicated - this agent is one more system talking to infrastructure that already existed, not a standalone demo.
+## The 5 concepts
+
+| Concept | Type | Where it lives |
+|---|---|---|
+| Database | Core | Postgres (Docker), `tools.py` — real persistence |
+| LLM integration | Core | `agent.py` — Claude tool-calling loop, two tools (read and write) |
+| API endpoints | Core | `api.py` — FastAPI `POST /ask` route exposing the agent over HTTP |
+| Agent with guardrails | Swap | `agent.py` (5-iteration loop cap), `tools.py` (`mark_task_done` verifies success via `rowcount` before reporting it) |
+| Containerized stack | Swap, in place of Deployment | `compose.yaml` — the database layer starts with one `docker compose up -d` |
 
 ## Deliberate scope decisions
 
