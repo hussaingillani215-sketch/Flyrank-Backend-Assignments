@@ -49,6 +49,7 @@ load_dotenv() depends on the script's current working directory to find the .env
 3. Install dependencies: pip install anthropic psycopg python-dotenv
 4. Run: python capstone-agent-loop/agent.py
 
+
 ## What's next
 
-A second tool (mark_task_done(id)) would extend this from read-only to a full read/write agent - letting it not just report on tasks but actually change their state, which is a stronger demonstration of two systems syncing in real time. The current architecture does not need to change to support this; it is an addition, not a rework.
+A second tool (mark_task_done(id)) was considered during development to extend this from read-only to a full read/write agent - letting it not just report on tasks but actually change their state, which would be a stronger demonstration of two systems syncing in real time. It was deliberately left out of this submission: a correctly working single-tool loop is stronger evidence than a partially-tested multi-tool one, especially under real time constraints. The current architecture does not need to change to support this addition if built later.
