@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from anthropic import Anthropic
-from tools import get_tasks
+from tools import get_tasks, mark_task_done
 
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -23,7 +23,21 @@ tool_definitions = [
                 }
             },
         },
-    }
+    },
+    {
+        "name": "mark_task_done",
+        "description": "Mark a task as done, given its id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "type": "integer",
+                    "description": "The id of the task to mark as done.",
+                }
+            },
+            "required": ["task_id"],
+        },
+    },
 ]
 
 def run_agent(user_message):
@@ -58,8 +72,19 @@ def run_agent(user_message):
                         "tool_use_id": block.id,
                         "content": str(result),
                     })
+                elif block.name == "mark_task_done":
+                    task_id = block.input.get("task_id")
+                    result = mark_task_done(task_id)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": str(result),
+                    })
 
         messages.append({"role": "user", "content": tool_results})
 
     print("Loop cap hit — stopping.")
     return "Loop cap hit — stopping."
+
+if __name__ == "__main__":
+    run_agent("What tasks do I still need to finish?")
